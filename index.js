@@ -1,21 +1,29 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
+const Item = require('./models/Item');
 app.use(express.json());
-const items = [];
+app.use(cors())
+
+const PORT = process.env.PORT || 3000;
+
+require('./Connection')
 
 app.get("/", (req, res) => {
     res.send("Response from root");
 });
+
+
 
 app.get("/greet", (req, res) => {
     res.send("Welcome");
 });
 
 //Create a items record
-app.post('/items', (req, res) => {
+app.post('/items', async (req, res) => {
     try {
-        const item = req.body;
-        items.push(item);
+        const item = new Item(req.body)
+        await item.save()
         res.send(items);
     } catch (error) {
         res.send(error)
@@ -23,8 +31,9 @@ app.post('/items', (req, res) => {
 });
 
 //read items records
-app.get('/items', (req, res) => {
+app.get('/items', async (req, res) => {
     try {
+        const items = await Item.find();
         res.send(items);
     } catch (error) {
         res.send(error);
@@ -60,7 +69,7 @@ app.put('/items/:id', (req, res) => {
     try {
         const id = req.params.id;
         const index = items.findIndex(item =>
-           item.id == id);
+            item.id == id);
         items[index] = req.body;
         res.send(items);
     } catch (error) {
@@ -69,6 +78,6 @@ app.put('/items/:id', (req, res) => {
 });
 
 
-app.listen(7000, () => {
-    console.log("Server is running on port 7000");
+app.listen(PORT, () => {
+    console.log("Server is running on port" + PORT);
 });
